@@ -7,12 +7,11 @@ import re
 import time
 local = time.strftime("%Y.%m.%d")
 url = 'http://cn.bing.com/'
-con = requests.get(url)
-content = con.text
-reg = r"(http://s.cn.bing.net/az/hprichbg/rb/.*?.jpg)"
-a = re.findall(reg, content, re.S)[0]
-print(a)
-read = requests.get(a)
-f = open('%s.jpg' % local, 'wb')
-f.write(read.content)
-f.close()
+html= requests.get(url).text
+link= re.findall(u"""g_img={url: "(.*?)",""", html)
+print(link)
+piclink='%s%s'%(url,link[0])
+print(piclink)
+picture = requests.get(piclink)
+with open('%s.jpg'%time.time(),'wb') as f:
+    f.write(picture.content)

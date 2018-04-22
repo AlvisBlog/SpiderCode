@@ -23,7 +23,6 @@ def Get_BigDirectory_Data():
         big_directory_name = re.findall('>(.*?)</a>', i, re.S)[0].strip()
         big_directory_url = "https://www.douyu.com" + re.findall('data-href="(.*?)"', i, re.S)[0]
         BigDirectoryInfo.append((big_directory_name,big_directory_url))
-    Save_BigDirectory_Data()
         #调试输出结果
         # print(big_directory_name)
         # print(big_directory_url)
@@ -40,3 +39,5 @@ def Save_BigDirectory_Data():
         sheet01.write(i+1,1,BigDirectoryInfo[i][1])
     f.save("斗鱼直播分类信息.xls")
 
+Get_BigDirectory_Data()
+Save_BigDirectory_Data()

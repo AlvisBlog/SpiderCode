@@ -9,11 +9,14 @@ import requests
 import re
 import xlwt
 
-
+#大分类数据处理
 class BigDiredtoryData:
+
+    #初始化大分类存储空列表
     def __init__(self):
         self.BigDirectoryInfo=[]
 
+    #获取大分类数据
     def Get_BigDirectory_Data(self):
         # 大分类url地址
         url = "https://www.douyu.com/directory"
@@ -29,6 +32,7 @@ class BigDiredtoryData:
             big_directory_url = "https://www.douyu.com" + re.findall('data-href="(.*?)"', i, re.S)[0]
             self.BigDirectoryInfo.append((big_directory_name,big_directory_url))
 
+    #存储大分类数据
     def Save_BigDirectory_Data(self):
         #存储分类信息
         f = xlwt.Workbook()
@@ -41,6 +45,7 @@ class BigDiredtoryData:
             sheet01.write(i+1,1,self.BigDirectoryInfo[i][1])
         f.save("斗鱼直播分类信息.xls")
 
+#主函数运行
 if __name__=="__main__":
     #实例化
     a = BigDiredtoryData()

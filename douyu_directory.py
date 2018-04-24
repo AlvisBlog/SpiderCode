@@ -1,15 +1,14 @@
 #coding=utf8
-
-
 _Author_ = 'Alvis'
 _Date_ = '2018-04-22 21:08'
-_readme_="获取斗鱼直播大分类信息"
+_readme_="获取斗鱼直播信息"
 
 import requests
 import re
 import xlwt
 import json
-#大分类数据处理
+
+#数据处理
 class CategoryData:
 
     #初始化分类存储列表

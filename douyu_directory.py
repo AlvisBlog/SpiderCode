@@ -8,7 +8,7 @@ _readme_="获取斗鱼直播大分类信息"
 import requests
 import re
 import xlwt
-
+import json
 #大分类数据处理
 class CategoryData:
 
@@ -17,6 +17,9 @@ class CategoryData:
         self.Total_BigCategoryInfo=[]
         self.Total_SubCategoryInfo=[]
         self.Total_CategoryInfo=[]
+        self.Total_CategoryUrl = []
+        self.Total_CategoryName=[]
+        self.Total_AnchorInfo=[]
 
     #获取所有大分类
     def Get_Total_BigCategory_Data(self):
@@ -70,9 +73,8 @@ class CategoryData:
             for i in range(len(url)):
                 url_subcategorys.append("https://www.douyu.com" + url[i])
             self.Total_CategoryInfo.append(((name_bigcategory,name_subcategorys),(url_bigcategory,url_subcategorys)))
-
-            # for a in range(len(name_part_subcategorys)):
-            #     print(""+name_part_subcategorys[a]+":https://www.douyu.com"+url_part_subcategorys[a])
+            self.Total_CategoryUrl.append(url_subcategorys)
+            self.Total_CategoryName.append(name_subcategorys)
 
     #存储所有大分类
     def Save_Total_BigCategory_Data(self):
@@ -121,13 +123,46 @@ class CategoryData:
                 sheet01.write(j + 1, 3, self.Total_CategoryInfo[i][1][1][j])
         f.save("douyu.xls")
 
+    #获取每个分类下的主播：主播名，房间链接，标题
+    def GetAnchorInfo(self):
+        #获取所有分类链接
+        self.Get_Total_Category()
+        #先获取一个子分类url链接
+        url=self.Total_CategoryUrl[0][0]
+        #请求页面返回状态
+        response=requests.get(url)
+        #获取页面源代码
+        html=response.text
+        #获取主播名称
+        AnchorName = re.findall('<span class="dy-name ellipsis fl">(.*?)</span>', html, re.S)
+        #获取主播房间链接
+        AnchorLink = re.findall('data-sub_rt="0" href="(.*?)"', html, re.S)
+        #获取房间标题
+        AnchorTitle=re.findall('<h3 class="ellipsis">(.*?)</h3',html,re.S)
+        #获取主播粉丝数
+        AnchorHot=re.findall('<span class="dy-num fr"  >(.*?)</span>',html,re.S)
+        #将四个数据存储到列表
+        for i in range(len(AnchorName)):
+            self.Total_AnchorInfo.append((AnchorName[i],"https://www.douyu.com"+AnchorLink[i],AnchorTitle[i].strip(),AnchorHot[i]))
+        cookie=response.cookies
+        url2='https://www.douyu.com/gapi/rkc/directory/2_1/2'
+        response2=requests.get(url=url2,cookies=cookie)
+        html2=response2.text
+        #print(html2)
+        content=json.loads(html2)
+        data=content['data']['rl'][0]
+        print(data)
+        print(data['nn'])
+        print("https://www.douyu.com" + data['url'])
+        print(data['rn'])
+        print(data['ol'])
+
 
 #主函数运行
 if __name__=="__main__":
     #实例化
     a = CategoryData()
-    a.Get_Total_Category()
-    a.Save_Total_Category()
+    a.GetAnchorInfo()
 
 
 

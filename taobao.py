@@ -28,7 +28,7 @@ html=response.text
 #strip去掉content前后端的空格,
 #[:-1]去掉尾部的分号
 #请注意我：妈蛋“g_page_config = (.*?)”，这个“=”两边各有一个空格也不知道为什么要加，靠
-content=re.findall(u'g_page_config = (.*?)g_srp_loadCss',html,re.S)[0].strip()[:-1]
+content=re.findall(u'g_page_config = (.*?)g_srp_loadCss',html,re.S)
 #调试输出content内容，该其输出内容复制后，在www.json.con粘贴，进行结构分析
 #print(content)
 #调试输出content类型

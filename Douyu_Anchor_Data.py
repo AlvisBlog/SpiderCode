@@ -19,6 +19,7 @@ class CategoryData:
         self.Total_CategoryName=[]
         self.Total_LOL_AnchorInfo=[]
 
+    #获取大分类
     def Get_Total_BigCategory_Data(self):
         # 总分类url地址
         url = "https://www.douyu.com/directory"
@@ -34,6 +35,7 @@ class CategoryData:
             big_Category_url = "https://www.douyu.com" + re.findall('data-href="(.*?)"', i, re.S)[0]
             self.Total_BigCategoryInfo.append((big_Category_name,big_Category_url))
 
+    #保存大分类
     def Save_Total_BigCategory_Data(self):
         # 创建Excel
         f = xlwt.Workbook()
@@ -46,6 +48,7 @@ class CategoryData:
             sheet01.write(i + 1, 1, self.Total_BigCategoryInfo[i][1])
         f.save("斗鱼直播总分类信息.xls")
 
+    #获取所有分类
     def Get_Total_Category_Data(self):
         self.Get_Total_BigCategory_Data()
         for i in range(1,len(self.Total_BigCategoryInfo)):
@@ -69,6 +72,7 @@ class CategoryData:
             self.Total_CategoryUrl.append(url_subcategorys)
             self.Total_CategoryName.append(name_subcategorys)
 
+    #保存所有分类
     def Save_Total_Category_Data(self):
         # 存储分类信息
         f = xlwt.Workbook()
@@ -100,6 +104,7 @@ class CategoryData:
             for data in content['data']['rl']:
                 self.Total_LOL_AnchorInfo.append([data['nn'],"https://www.douyu.com" + data['url'],data['rn'],data['ol']])
 
+    #保存主播信息
     def Save_LOL_AnchorInfo(self):
         f = xlwt.Workbook()
         sheet01 = f.add_sheet("LOL主播信息")
@@ -122,7 +127,5 @@ class CategoryData:
 if __name__=="__main__":
     #实例化
     a = CategoryData()
-
-
-
-
+    a.Get_LOL_AnchorInfo()
+    a.Save_LOL_AnchorInfo()

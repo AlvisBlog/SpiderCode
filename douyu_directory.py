@@ -124,38 +124,15 @@ class CategoryData:
 
     #获取每个分类下的主播：主播名，房间链接，标题
     def GetAnchorInfo(self):
-        #获取所有分类链接
-        self.Get_Total_Category()
-        #先获取一个子分类url链接
-        url=self.Total_CategoryUrl[0][0]
-        #请求页面返回状态
-        response=requests.get(url)
-        #获取页面源代码
-        html=response.text
-        #获取主播名称
-        AnchorName = re.findall('<span class="dy-name ellipsis fl">(.*?)</span>', html, re.S)
-        #获取主播房间链接
-        AnchorLink = re.findall('data-sub_rt="0" href="(.*?)"', html, re.S)
-        #获取房间标题
-        AnchorTitle=re.findall('<h3 class="ellipsis">(.*?)</h3',html,re.S)
-        #获取主播粉丝数
-        AnchorHot=re.findall('<span class="dy-num fr"  >(.*?)</span>',html,re.S)
-        #将四个数据存储到列表
-        for i in range(len(AnchorName)):
-            self.Total_AnchorInfo.append((AnchorName[i],"https://www.douyu.com"+AnchorLink[i],AnchorTitle[i].strip(),AnchorHot[i]))
-        cookie=response.cookies
-        url2='https://www.douyu.com/gapi/rkc/directory/2_1/2'
-        response2=requests.get(url=url2,cookies=cookie)
-        html2=response2.text
-        #print(html2)
-        content=json.loads(html2)
-        data=content['data']['rl'][0]
-        print(data)
-        print(data['nn'])
-        print("https://www.douyu.com" + data['url'])
-        print(data['rn'])
-        print(data['ol'])
-
+        for page in range(1,7):
+            url2='https://www.douyu.com/gapi/rkc/directory/2_1/%s'%page
+            response2=requests.get(url2)#,cookies=cookie
+            html2=response2.text
+            content=json.loads(html2)
+            for data in content['data']['rl']:
+                self.Total_AnchorInfo.append([data['nn'],"https://www.douyu.com" + data['url'],data['rn'],data['ol']])
+            print(len(self.Total_AnchorInfo))
+        print(self.Total_AnchorInfo[0])
 
 #主函数运行
 if __name__=="__main__":

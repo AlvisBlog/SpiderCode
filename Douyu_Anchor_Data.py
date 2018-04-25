@@ -121,11 +121,51 @@ class CategoryData:
             i = i + 1
         f.save("斗鱼直播_LOL主播信息.xls")
 
+    def Get_Anchor_Data(self):
+        self.Get_Total_Category_Data()
+        anchorinfo=[]
+        impress=[]
+        all_impress=[]
+        for category_urls in self.Total_CategoryUrl:
+            for category_url in category_urls:
+                response=requests.get(category_url)
+                html=response.text
+                anchorname = re.findall('<span class="dy-name ellipsis fl">(.*?)</span>', html, re.S)
+                anchorlink = re.findall('data-sub_rt="0" href="(.*?)"', html, re.S)
+                anchortitle=re.findall('<h3 class="ellipsis">(.*?)</h3>',html,re.S)
+                anchorhot=re.findall('<span class="dy-num fr"  >(.*?)</span>',html,re.S)
+                anchortag=re.findall('<span class="tag ellipsis">(.*?)</span>',html,re.S)
+                anchorimpress=re.findall('<div class="impress-tag-list">(.*?)</div>',html,re.S)
+                for i in range(len(anchorimpress)):
+                    tag_impress=re.findall('tags/(.*?)</span>',anchorimpress[i],re.S)
+                    for j in range(len(tag_impress)):
+                        impress.append(tag_impress[j].split('">')[1])
+                    all_impress.append((impress))
+                    anchorinfo.append((anchorname[i],"https://www.douyu.com" + anchorlink[i],anchortitle[i].strip(),anchorhot[i],anchortag[i],all_impress[i]))
+        print(all_impress)
+        # f = xlwt.Workbook()
+        # sheet01 = f.add_sheet("主播信息")
+        # sheet01.write(0, 0, "主播名称")
+        # sheet01.write(0, 1, "主播房间")
+        # sheet01.write(0, 2, "主播标题")
+        # sheet01.write(0, 3, "主播热度")
+        # sheet01.write(0, 4, "主播类别")
+        # sheet01.write(0, 5, "主播印象")
+        # i = 1
+        # for anchor in anchorinfo:
+        #     sheet01.write(i, 0, anchor[0])
+        #     sheet01.write(i, 1, anchor[1])
+        #     sheet01.write(i, 2, anchor[2])
+        #     sheet01.write(i, 3, anchor[3])
+        #     sheet01.write(i, 4, anchor[4])
+        #     sheet01.write(i, 5, anchor[5])
+        #     i = i + 1
+        # f.save("斗鱼直播主播信息.xls")
+
 
 
 #主函数运行
 if __name__=="__main__":
     #实例化
     a = CategoryData()
-    a.Get_LOL_AnchorInfo()
-    a.Save_LOL_AnchorInfo()
+    a.Get_Anchor_Data()

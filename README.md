@@ -9,3 +9,5 @@ DouBan_Movie.py</br>
 爬取豆瓣Top250的电影信息</br>
 DouBan_Book.py</br>
 爬取豆瓣Top250的书籍信息</br>
+PictureWeb.py</br>
+对千图网的图片进行下载。并将链接写入文件</br>

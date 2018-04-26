@@ -2,8 +2,6 @@
 _Author_ = 'Alvis'
 _Date_ = '2018-04-18 15:18'
 
-
-
 from bs4 import BeautifulSoup
 import requests
 from openpyxl import Workbook

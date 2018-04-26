@@ -2,7 +2,6 @@
 _Author_ = 'Alvis'
 _Date_ = '2018-04-18 15:13'
 
-
 import requests
 import re
 import codecs
@@ -12,23 +11,11 @@ wb = Workbook()
 dest_filename = '电影.xlsx'
 ws1 = wb.active
 ws1.title = "电影top250"
-
 DOWNLOAD_URL = 'http://movie.douban.com/top250/'
 
-
-"""获取url地址页面内容"""
 def download_page(url):
-    #请求头部
-    # headers = {
-    #     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36'
-    # }
-    """获取页面内容"""
     html = requests.get(url).text
-    """调试输出页面内容"""
-    #print(html)
     return html
-
-
 
 def get_li(doc):
     soup = BeautifulSoup(doc, 'html.parser')
@@ -56,7 +43,6 @@ def get_li(doc):
     if page:
         return name, star_con, score, info_list, DOWNLOAD_URL + page['href']
     return name, star_con, score, info_list, None
-
 
 def main():
     url = DOWNLOAD_URL

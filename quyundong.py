@@ -56,5 +56,8 @@ class Quyundong:
 
 if __name__=='__main__':
     a=Quyundong()
-    a.GetVenuesInfo()
-    print(a.venues_info )
+    try:
+        a.GetVenuesInfo()
+        print(a.venues_info )
+    except Exception as e:
+        print(e)

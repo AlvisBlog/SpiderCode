@@ -23,7 +23,7 @@ sheet.write(0,2,"小说类型")
 sheet.write(0,3,"小说简介")
 sheet.write(0,4,"小说状态")
 sheet.write(0,5,"小说字数")
-for page in range(778,779):
+for page in range(1,44592):
     print("正在获取第%s页所有小说信息" % page)
     url = 'https://www.qidian.com/all?orderId=&style=1&pageSize=20&siteid=1&pubflag=0&hiddenField=0&page=%s'%page
     response=requests.get(url)
@@ -37,7 +37,7 @@ for page in range(778,779):
     for i in range(len(name_contents)):
         book_name.append(name_contents[i].split(">")[1])
         book_author.append(author_contents[i].split(">")[1])
-        book_author.append(type_contents[i].split(">")[1])
+        book_type.append(type_contents[i].split(">")[1])
         book_intro.append(intro_contents[i].strip())
         book_status.append(status_contents[i])
         print("已获取%s本小说信息" % num)

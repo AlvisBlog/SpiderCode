@@ -23,7 +23,9 @@ sheet.write(0,2,"小说类型")
 sheet.write(0,3,"小说简介")
 sheet.write(0,4,"小说状态")
 sheet.write(0,5,"小说字数")
-for page in range(1,778):
+#5217
+#44592
+for page in range(10443,44592):
     try:
         print("正在获取第%s页所有小说信息" % page)
         url = 'https://www.qidian.com/all?orderId=&style=1&pageSize=20&siteid=1&pubflag=0&hiddenField=0&page=%s'%page
@@ -51,5 +53,5 @@ for page in range(1,778):
     except Exception as reason:
         print(reason)
         break
-f.save("起点中文网小说信息.xls")
+f.save("起点中文网小说信息1.xls")
 print(len(book_name))

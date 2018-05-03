@@ -69,7 +69,7 @@ class Spider_bqg_novel:
                 print("第%s章节内容为空,无法获取"%self.chapter_num)
             self.chapter_num=self.chapter_num+1
             #每隔5秒获取一次章节内容
-            # sleep(5)
+            sleep(5)
         return self.chapter_url, self.chapter_name, self.chapter_content
 
     # 保存数据,需要传入小说名称,excel文件名称

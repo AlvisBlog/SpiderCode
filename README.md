@@ -1,4 +1,4 @@
-# PythonProject
+# SpiderProject
 爬虫代码</br>
 Douyu_Anchor_Data.py</br>
 暂时智能爬取每个小分类下第一页的主播信息，包括主播名称，主播房间链接，主播标题，主播热度，主播类别，主播标签（标签数据未进行清洗）

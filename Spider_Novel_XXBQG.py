@@ -94,4 +94,4 @@ if __name__=="__main__":
     Spider.GetChapterData("https://www.xxbiquge.com/80_80689/")
     print(len(Spider.chapter_content),len(Spider.chapter_name),len(Spider.chapter_url))
     print("正在存储数据")
-    Spider.SaveNovelDataToExcel("透视小野医","小说")
+    Spider.SaveNovelDataToExcel("透视小野医","笔趣阁小说")

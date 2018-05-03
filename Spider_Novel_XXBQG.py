@@ -22,7 +22,7 @@ class Spider_bqg_novel:
         self.chapter_info=[]
         self.chapter_num=1
 
-    #获取章节名称及链接、内容
+    #获取章节名称及链接、内容,需要传入小说页面链接
     def GetChapterData(self,url):
         # 返回信息
         response = requests.get(url,verify=False)
@@ -49,37 +49,49 @@ class Spider_bqg_novel:
             try:
                 html1 = response1.text.encode('ISO-8859-1').decode('utf8')
                 self.chapter_content.append(re.findall('<div id="content">(.*?)</div>', html1, re.S)[0])
-                print("已获取第%s章内容"%self.chapter_num)
+                #调试输出内容，必要可注释
+                print("已获取第%s章内容"%self.chapter_num+re.findall('<div id="content">(.*?)</div>', html1, re.S)[0])
             except Exception as e:
-                print("无法获取该章节内容,错误为:%s"%e)
+                print("第%s章节内容为空,无法获取"%self.chapter_num)
             self.chapter_num=self.chapter_num+1
             #每隔5秒获取一次章节内容
             sleep(5)
         return self.chapter_url, self.chapter_name, self.chapter_content
 
-    # 将章节名称及链接、内容放置到列表
-    def GetChapterInfo(self):
-        for i in range(len(self.chapter_content)):
-            self.chapter_info.append((self.chapter_name[i], self.chapter_url[i], self.chapter_content[i]))
-
-    # 保存数据
+    # 保存数据,需要传入小说名称,excel文件名称
     def SaveNovelDataToExcel(self,NovelName,ExcelName):
-        # 写入文件
-        wb = openpyxl.Workbook()
-        ws1 = wb.get_sheet_by_name('Sheet')
-        ws1.title = NovelName
-        ws1['A1'] = "章节名称"
-        ws1['B1'] = "章节地址"
-        ws1['C1'] = "章节内容"
-        for row in self.chapter_info:
-            ws1.append(row)
-        wb.save("%s.xlsx"%ExcelName)
+        try:
+            # 存在文件则进行加载
+            wb = openpyxl.load_workbook(filename='%s.xlsx' % ExcelName)
+        except Exception as e:
+            # 不存在则进行创建
+            wb = openpyxl.Workbook()
+        # 获取所有的表
+        all = wb.get_sheet_names()
+        # 删除表Sheet
+        name = 'Sheet'
+        if name in all:
+            wb.remove_sheet(wb.get_sheet_by_name(name))
+        # 创建新表
+        ws = wb.create_sheet()
+        # 为新表命名
+        ws.title = NovelName
+        ws.cell(row=1, column=1, value='章节名称')
+        ws.cell(row=1, column=2, value='章节地址')
+        ws.cell(row=1, column=3, value='章节内容')
+        for i in range(len(self.chapter_name)):
+            ws.cell(row=i + 2, column=1, value=self.chapter_name[i])
+        for i in range(len(self.chapter_url)):
+            ws.cell(row=i + 2, column=2, value=self.chapter_url[i])
+        for i in range(len(self.chapter_content)):
+            ws.cell(row=i + 2, column=3, value=self.chapter_content[i])
+        wb.save("%s.xlsx" % ExcelName)
 
 if __name__=="__main__":
     print("正在实例化对象")
     Spider=Spider_bqg_novel()
     print("正在获取章节信息")
-    Spider.GetChapterData("https://www.xxbiquge.com/0_311/")
-    print("正在将章节信息存入列表")
-    Spider.GetChapterInfo()
-    Spider.SaveNovelDataToExcel("灵域","小说2")
+    Spider.GetChapterData("https://www.xxbiquge.com/80_80689/")
+    print(len(Spider.chapter_content),len(Spider.chapter_name),len(Spider.chapter_url))
+    print("正在存储数据")
+    Spider.SaveNovelDataToExcel("透视小野医","小说")

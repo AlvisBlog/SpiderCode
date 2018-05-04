@@ -105,7 +105,7 @@ def SaveVenueData():
         print("已写入%s条数据"%(i+1))
     wb.save("场馆信息.xlsx")
 
-def GetVenueInfo():
+def Get_One_VenueInfo():
     for page in range(1,410):
         print("当前访问第%s页"%page)
         url='http://www.dongsport.com/venue/list-1004401-0-0-0-0-0-0-0-%s.html'%page
@@ -126,7 +126,7 @@ def GetVenueInfo():
             venue_web_address.append("http://www.dongsport.com"+re.findall('href="(.*?)"',content,re.S)[0])
         print("已获取第%s页数据"%page)
 
-def SaveVenueInfo():
+def Save_One_VenueInfo():
     try:
         wb=openpyxl.load_workbook(filename="场馆信息.xlsx")
     except Exception as e:

@@ -18,16 +18,16 @@ class Get_qd_novel:
         self.novel_intro=[]
 
     def GetNovelData(self):
-        for page in range(1,3):
+        for page in range(1,44807):
             headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"}
             qd_url = 'https://www.qidian.com/all?orderId=&page=%s&style=1&pageSize=20&siteid=1&pubflag=0&hiddenField=0'%page
             try:
                 response = requests.get(qd_url,headers=headers,verify=False)
             except Exception as net_error:
-                print(net_error)
-                print("第%s章无法获取到数据"%page)
                 with open("log.text",'a+') as f:
-                    f.write(u"第%s章无法获取到数据"%page+"\n")
+                    f.write(u"第%s章无法获取到数据"%page + "\n")
+                    f.write("错误为:%s"%net_error + "\n")
+                    f.close()
                 continue
             urllib3.disable_warnings()
             html = response.text
@@ -87,8 +87,11 @@ class Get_qd_novel:
                 ws.cell(row=i + 2, column=4, value=self.novel_small_type[i])
                 ws.cell(row=i + 2, column=5, value=self.novel_status[i])
                 ws.cell(row=i + 2, column=6, value=self.novel_intro[i])
+                print("已写入%s条数据"%i)
             except Exception as max_line:
-                print(max_line)
+                with open("log.text","a+") as f:
+                    f.write("写入数据出错,错误为:%s"%max_line)
+                    f.close()
                 # 创建新表
                 ws = wb.create_sheet()
                 # 为新表命名
@@ -106,7 +109,6 @@ class Get_qd_novel:
                 ws.cell(row=i + 2, column=5, value=self.novel_status[i])
                 ws.cell(row=i + 2, column=6, value=self.novel_intro[i])
                 continue
-
 
         wb.save("起点中文网小说名单.xlsx")
         print("数据写入完毕")

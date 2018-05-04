@@ -25,7 +25,7 @@ class Get_qd_novel:
                 response = requests.get(qd_url,headers=headers,verify=False)
             except Exception as net_error:
                 with open("log.text",'a+') as f:
-                    f.write(u"第%s章无法获取到数据"%page + "\n")
+                    f.write(u"第%s页无法获取到数据"%page + "\n")
                     f.write("错误为:%s"%net_error + "\n")
                     f.close()
                 continue

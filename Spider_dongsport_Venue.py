@@ -18,7 +18,7 @@ venue_mobile=[]
 
 def GetVenueInfo():
     for page in range(1,410):
-        print("当前访问第%s"%page)
+        print("当前访问第%s页"%page)
         url='http://www.dongsport.com/venue/list-1004401-0-0-0-0-0-0-0-%s.html'%page
         try:
             response=requests.get(url)
@@ -34,14 +34,19 @@ def GetVenueInfo():
             venue_address.append(re.findall('<li>(.*?) ',content,re.S)[0].strip())
             venue_tag.append(re.findall('<li>(.*?)</li>',content,re.S)[2].strip())
             venue_mobile.append(re.findall('<b class="fontstyle4">(.*?) ',content,re.S)[0].strip())
+        print("已获取第%s页数据"%page)
 
 def SaveVenueInfo():
     try:
         wb=openpyxl.load_workbook(filename="场馆信息.xlsx")
     except Exception as e:
         wb=openpyxl.Workbook()
-    if 'Sheet' in wb.sheetnames:
-        del wb.sheetnames['Sheet']
+    # 获取所有的表
+    all = wb.sheetnames
+    # 删除表Sheet
+    name = 'Sheet'
+    if name in all:
+        del wb['Sheet']
     ws=wb.create_sheet()
     ws.title='动网'
     ws.cell(row=1, column=1, value='场馆名称')
@@ -53,7 +58,7 @@ def SaveVenueInfo():
         ws.cell(row=i + 2, column=2, value=venue_address[i])
         ws.cell(row=i + 2, column=3, value=venue_mobile[i])
         ws.cell(row=i + 2, column=4, value=venue_tag[i])
-        print("已写入%s条数据"%i)
+        print("已写入%s条数据"%(i+1))
     wb.save("场馆信息.xlsx")
 
 def run():

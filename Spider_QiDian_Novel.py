@@ -22,7 +22,7 @@ class Get_qd_novel:
             headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"}
             qd_url = 'https://www.qidian.com/all?orderId=&page=%s&style=1&pageSize=20&siteid=1&pubflag=0&hiddenField=0'%page
             try:
-                response = requests.get(qd_url,headers=headers,verify=False)
+                response = requests.get(qd_url,headers=headers,verify=False,timeout=5)
             except Exception as net_error:
                 with open("log.text",'a+') as f:
                     f.write(u"第%s页无法获取到数据"%page + "\n")

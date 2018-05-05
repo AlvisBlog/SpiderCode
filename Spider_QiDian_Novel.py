@@ -88,41 +88,64 @@ class Get_qd_novel:
         ws.cell(row=1, column=5, value='小说状态')
         ws.cell(row=1, column=6, value='小说简介')
 
+        with open("log.text", 'a+') as f:
+            f.write("开始写入小说名  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
         for i in range(len(self.novel_name)):
-            with open("log.text", 'a+') as f:
-                f.write("开始写入小说名  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
-            ws.cell(row=i + 2, column=1, value=self.novel_name[i])
-            print("已写入%s个小说名" % i)
+            try:
+                ws.cell(row=i + 2, column=1, value=self.novel_name[i])
+            except Exception as name_error:
+                with open("log.text", 'a+') as f:
+                    f.write("无法写入第%s本小说:%s,原因:%s  "%(i,self.novel_name[i],name_error) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
+        with open("log.text", 'a+') as f:
+            f.write("开始写入小说作者  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
         for i in range(len(self.novel_author)):
-            with open("log.text", 'a+') as f:
-                f.write("开始写入小说作者  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
-            ws.cell(row=i + 2, column=2, value=self.novel_author[i])
-            print("已写入%s个作者" % i)
+            try:
+                ws.cell(row=i + 2, column=2, value=self.novel_author[i])
+            except Exception as author_error:
+                with open("log.text", 'a+') as f:
+                    f.write("无法写入第%s个作者:%s,原因:%s  "%(i,self.novel_author[i],author_error) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
+        with open("log.text", 'a+') as f:
+            f.write("开始写入小说大类型  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
         for i in range(len(self.novel_big_type)):
-            with open("log.text", 'a+') as f:
-                f.write("开始写入小说大类型  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
-            ws.cell(row=i + 2, column=3, value=self.novel_big_type[i])
-            print("已写入%s个大类型" % i)
+            try:
+                ws.cell(row=i + 2, column=3, value=self.novel_big_type[i])
+            except Exception as big_type_error:
+                with open("log.text", 'a+') as f:
+                    f.write("无法写入第%s个大分类:%s,原因:%s  " % (i, self.novel_big_type[i],big_type_error) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
+        with open("log.text", 'a+') as f:
+            f.write("开始写入小说小类型  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
         for i in range(len(self.novel_small_type)):
-            with open("log.text", 'a+') as f:
-                f.write("开始写入小说小类型  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
-            ws.cell(row=i + 2, column=4, value=self.novel_small_type[i])
-            print("已写入%s个小类型" % i)
+            try:
+                ws.cell(row=i + 2, column=4, value=self.novel_small_type[i])
+            except Exception as small_type_error:
+                with open("log.text", 'a+') as f:
+                    f.write("无法写入第%s个小分类:%s,原因:%s "% (i, self.novel_small_type[i],small_type_error) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
+        with open("log.text", 'a+') as f:
+            f.write("开始写入小说状态  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
         for i in range(len(self.novel_status)):
-            with open("log.text", 'a+') as f:
-                f.write("开始写入小说状态  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
-            ws.cell(row=i + 2, column=5, value=self.novel_status[i])
-            print("已写入%s个状态" % i)
+            try:
+                ws.cell(row=i + 2, column=5, value=self.novel_status[i])
+            except Exception as status_error:
+                with open("log.text", 'a+') as f:
+                    f.write("无法写入第%s个状态:%s,原因:%s  " % (i, self.novel_status[i],status_error) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
+        with open("log.text", 'a+') as f:
+            f.write("开始写入小说简介  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
         for i in range(len(self.novel_intro)):
-            with open("log.text", 'a+') as f:
-                f.write("开始写入小说简介  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
-            ws.cell(row=i + 2, column=6, value=self.novel_intro[i])
-            print("已写入%s个简介"%i)
+            try:
+                ws.cell(row=i + 2, column=6, value=self.novel_intro[i])
+            except Exception as intro_error:
+                with open("log.text", 'a+') as f:
+                    f.write("无法写入第%s个简介:%s,原因:%s  " % (i, self.novel_intro[i],intro_error) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+
+        with open("log.text", 'a+') as f:
+            f.write("当前总共爬取%s本小说,当前总共爬取%s个作者, 当前总共爬取%s个大分类 当前总共爬取%s个小分类, 当前总共爬取%s个状态, 当前总共爬取%s个简介   "
+                    %(self.novel_name,self.novel_author,self.novel_big_type,self.novel_small_type,self.novel_status,self.novel_status) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+
 
         try:
             with open("log.text", 'a+') as f:

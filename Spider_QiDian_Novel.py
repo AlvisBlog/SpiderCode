@@ -91,7 +91,7 @@ class Get_qd_novel:
         for i in range(len(self.novel_name)):
             with open("log.text", 'a+') as f:
                 f.write("开始写入小说名  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
-            ws.cell(row=i + 2, column=1, value=self)
+            ws.cell(row=i + 2, column=1, value=self.novel_name[i])
             print("已写入%s个小说名" % i)
 
         for i in range(len(self.novel_author)):

@@ -7,6 +7,8 @@ import requests
 import re
 import xlwt
 import json
+import openpyxl
+import time
 
 #数据处理
 class CategoryData:
@@ -19,58 +21,88 @@ class CategoryData:
         self.Total_CategoryName=[]
         self.Total_LOL_AnchorInfo=[]
 
-    #获取大分类
+    #获取总分类
     def Get_Total_BigCategory_Data(self):
         # 总分类url地址
         url = "https://www.douyu.com/directory"
-        # 获取页面信息内容
-        response = requests.get(url)
-        html = response.text
-        # 获取关键信息，包含所有的大分类囊括信息
-        content1 = re.findall('<div class="classify-li">(.*?)</div>', html, re.S)[0]
-        content2 = re.findall('<a(.*?)</li>', content1, re.S)
-        # 截取关键信息
-        for i in content2:
-            big_Category_name = re.findall('>(.*?)</a>', i, re.S)[0].strip()
-            big_Category_url = "https://www.douyu.com" + re.findall('data-href="(.*?)"', i, re.S)[0]
-            self.Total_BigCategoryInfo.append((big_Category_name,big_Category_url))
+        try:
+            # 获取页面信息内容
+            response = requests.get(url)
+            html = response.text
+            # 获取关键信息，包含所有的大分类囊括信息
+            content1 = re.findall('<div class="classify-li">(.*?)</div>', html, re.S)[0]
+            content2 = re.findall('<a(.*?)</li>', content1, re.S)
+            # 截取关键信息
+            for i in content2:
+                big_Category_name = re.findall('>(.*?)</a>', i, re.S)[0].strip()
+                big_Category_url = "https://www.douyu.com" + re.findall('data-href="(.*?)"', i, re.S)[0]
+                self.Total_BigCategoryInfo.append((big_Category_name, big_Category_url))
+            with open("douyu.log","a+") as f:
+                f.write("已获取总分类数据,一共有%s个总分类 "%len(self.Total_BigCategoryInfo)+time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+        except Exception as re_error:
+            with open("douyu.log","a+") as f:
+                f.write("页面无法相应,错误:%s  "%re_error+time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
-    #保存大分类
+        return self.Total_BigCategoryInfo
+
+    #保存总分类
     def Save_Total_BigCategory_Data(self):
-        # 创建Excel
-        f = xlwt.Workbook()
-        # 创建大分类信息存储的excel表
-        sheet01 = f.add_sheet("斗鱼直播总分类信息")
-        sheet01.write(0, 0, "分类名")
-        sheet01.write(0, 1, "分类url地址")
+        with open("douyu.log", 'a+') as f:
+            f.write("检查获取总分类函数返回的总分类数据为%s  "%len(self.Total_BigCategoryInfo) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+            f.close()
+        try:
+            # 存在文件则进行加载
+            wb = openpyxl.load_workbook(filename="斗鱼.xlsx")
+        except Exception as e:
+            with open("douyu.log", 'a+') as f:
+                f.write("斗鱼.xlsx文件名不存在,进行创建  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                f.close()
+            # 不存在则进行创建
+            wb = openpyxl.Workbook()
+        # 获取所有的表
+        all = wb.sheetnames
+        # 删除表Sheet
+        name = 'Sheet'
+        if name in all:
+            del wb['Sheet']
+        # 创建新表
+        ws = wb.create_sheet()
+        # 为新表命名
+        ws.title ='斗鱼总分类'
+        ws.cell(row=1, column=1, value='总分类名称')
+        ws.cell(row=1, column=2, value='总分类Url')
         for i in range(len(self.Total_BigCategoryInfo)):
-            sheet01.write(i + 1, 0, self.Total_BigCategoryInfo[i][0])
-            sheet01.write(i + 1, 1, self.Total_BigCategoryInfo[i][1])
-        f.save("斗鱼直播总分类信息.xls")
+            try:
+                ws.cell(row=i+2, column=1, value=self.Total_BigCategoryInfo[i][0])
+                ws.cell(row=i+2, column=2, value=self.Total_BigCategoryInfo[i][1])
+            except Exception as BigCategoryInfo_error:
+                with open("douyu.log", 'a+') as f:
+                    f.write("无法写入数据,错误:%s  "%BigCategoryInfo_error + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                    f.close()
+        wb.save("斗鱼.xls")
 
-    #获取所有分类
+    #获取各个总分类之下的小分类
     def Get_Total_Category_Data(self):
-        self.Get_Total_BigCategory_Data()
         for i in range(1,len(self.Total_BigCategoryInfo)):
             #获取大分类的名称及url地址
-            url_bigcategory=self.Total_BigCategoryInfo[i][1]
-            name_bigcategory=self.Total_BigCategoryInfo[i][0]
+            url_big_category=self.Total_BigCategoryInfo[i][1]
+            name_big_category=self.Total_BigCategoryInfo[i][0]
             #print("大分类:"+name_part_bigcategory+",url:"+url_part_bigcategory)
             #获取各个大分类的页面源代码
-            html=requests.get(url_bigcategory).text
+            html=requests.get(url_big_category).text
             #获取各个大分类的子分类所在数据区
             contents=re.findall('<ul id="live-list-contentbox">(.*?)</ul>',html,re.S)[0]
             #获取所有的子分类名称
-            name_subcategorys=re.findall('<p class="title">(.*?)</p>',contents,re.S)
+            name_sub_category=re.findall('<p class="title">(.*?)</p>',contents,re.S)
             #获取所有的子分类url
             url=re.findall('href="(.*?)"',contents,re.S)
             #为url添加https://www.douyu.com
-            url_subcategorys = []
+            url_sub_category = []
             for i in range(len(url)):
-                url_subcategorys.append("https://www.douyu.com" + url[i])
-            self.Total_CategoryInfo.append(((name_bigcategory,name_subcategorys),(url_bigcategory,url_subcategorys)))
-            self.Total_CategoryUrl.append(url_subcategorys)
-            self.Total_CategoryName.append(name_subcategorys)
+                url_sub_category.append("https://www.douyu.com" + url[i])
+            self.Total_CategoryInfo.append(((name_big_category,name_sub_category),(url_big_category,url_sub_category)))
+            self.Total_CategoryUrl.append(url_sub_category)
+            self.Total_CategoryName.append(name_sub_category)
 
     #保存所有分类
     def Save_Total_Category_Data(self):
@@ -170,5 +202,9 @@ class CategoryData:
 #主函数运行
 if __name__=="__main__":
     #实例化
-    a = CategoryData()
-    a.Get_Anchor_Data()
+    Spider = CategoryData()
+    Spider.Get_Total_BigCategory_Data()
+    Spider.Get_Total_Category_Data()
+    print(Spider.Total_CategoryInfo[0])
+    print(Spider.Total_CategoryName)
+    print(Spider.Total_CategoryUrl)

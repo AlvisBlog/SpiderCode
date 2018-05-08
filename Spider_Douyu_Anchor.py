@@ -28,6 +28,8 @@ class CategoryData:
         self.Parent_Category_Url = []
         #子分类标签
         self.Sub_CategoryInfo = []
+        #主播信息
+        self.Anchor_Info=[]
 
     #获取祖分类
     def Get_Ancestor_Category_Data(self):
@@ -247,15 +249,8 @@ class CategoryData:
 
     #根据提供的祖父分类及页数，批量爬取该分类的主播信息
     def Get_Anchor_Info(self,ancestor,parent,type_num,page):
-        result=self.Is_Exist_Category(ancestor,parent)
-        anchor_name = []
-        anchor_title=[]
-        anchor_parent_category=[]
-        anchor_room=[]
-        anchor_hot=[]
-        anchor_info=[]
-        tag=[]
 
+        result=self.Is_Exist_Category(ancestor,parent)
 
         if result is False:
             with open("douyu.log", "a+") as f:
@@ -269,72 +264,81 @@ class CategoryData:
             html=response.text
             l=re.findall('<a class="play-list-link"',html,re.S)
 
-            if len(l)>120:
+            if len(l)==120:
 
                 for page_num in range(1,page+1):
-
-                    api='https://www.douyu.com/gapi/rkc/directory/2_%s/%s'%(type_num,page_num)
+                    a='https://www.douyu.com/gapi/rkc/directory/2_'
+                    api=a+"%s"%type_num+"/"+"%s"%(page_num)
                     response2=requests.get(api)
                     html2=response2.text
                     content=json.loads(html2)
-
+                    #收集每一页的主播信息
                     for i in range(len(content['data']['rl'])):
+                        #作用数据区
                         data=content['data']['rl'][i]
-
-                        if 'nn' in data:
-                            name=data['nn']
-                        else:
-                            name="主播无名称"
-
-                        if 'rn' in data:
-                            title=data['rn']
-                        else:
-                            title="主播无房间标题"
-
-                        if 'c2name' in data:
-                            parent_category=data['c2name']
-                        else:
-                            parent_category="主播无父分类"
-
-                        if 'url' in data:
-                            room="https://www.douyu.com"+data['url']
-                        else:
-                            room="主播无房间链接"
-
-                        if 'ol' in data:
-                            hot=data['ol']
-                        else:
-                            hot="主播房间无人"
-
-                        if 'utag' in data:
-                            for s in data['utag']:
-                                tag.append(s['name'])
-                        else:
+                        #主播名称
+                        name=data['nn']
+                        #主播房间标题
+                        title=data['rn']
+                        #主播所在父分类
+                        parent_category=data['c2name']
+                        #主播房间链接
+                        room="https://www.douyu.com"+data['url']
+                        #主播所在房间现时人数
+                        hot=data['ol']
+                        #主播标签
+                        h=[]
+                        try:
+                            if len(data['utag']) >1:
+                                for s in data['utag']:
+                                    h.append(s['name'])
+                                tag=h
+                        except Exception:
                             tag="主播无标签"
+                        finally:
+                            self.Anchor_Info.append([name,title,parent_category,room,hot,tag])
 
-                        anchor_info.append([name,title,parent_category,room,hot,tag])
+                for i in range(len(self.Anchor_Info)):
+                    print(i+1,self.Anchor_Info[i])
 
             else:
+
                 # 获取主播名称
-                content_name = re.findall('<span class="dy-name ellipsis fl">(.*?)</span>', html, re.S)
-                for content in content_name:
+                anchor_name = []
+                name = re.findall('<span class="dy-name ellipsis fl">(.*?)</span>', html, re.S)
+                for content in name:
                     anchor_name.append(content)
+
                 #获取主播房间标题
-                content_title=re.findall('<h3 class="ellipsis">(.*?)</h3>',html,re.S)
-                for content in content_title:
+                anchor_title = []
+                title=re.findall('<h3 class="ellipsis">(.*?)</h3>',html,re.S)
+                for content in title:
                     anchor_title.append(content.strip())
+
                 #获取主播父分类
-                content_parent_category=re.findall('<span class="tag ellipsis">(.*?)</span>',html,re.S)
-                for content in content_parent_category:
+                anchor_parent_category = []
+                parent_category=re.findall('<span class="tag ellipsis">(.*?)</span>',html,re.S)
+                for content in parent_category:
                     anchor_parent_category.append(content)
+
                 #获取主播房间链接
-                content_room=re.findall('data-sub_rt="0" href="(.*?)"',html,re.S)
-                for content in content_room:
+                anchor_room = []
+                room=re.findall('data-sub_rt="0" href="(.*?)"',html,re.S)
+                for content in room:
                     anchor_room.append("https://www.douyu.com"+content)
+
                 #获取主播现时人数
-                content_hot=re.findall('<span class="dy-num fr"  >(.*?)</span>',html,re.S)
-                for content in content_hot:
+                anchor_hot = []
+                hot=re.findall('<span class="dy-num fr"  >(.*?)</span>',html,re.S)
+                for content in hot:
                     anchor_hot.append(content)
+
+                for i in range(len(anchor_name)):
+                    self.Anchor_Info.append([anchor_name[i],anchor_title[i],anchor_parent_category[i],
+                                       anchor_room[i],anchor_hot[i]])
+
+                for data in self.Anchor_Info:
+                    print(data)
 
 
 
@@ -347,4 +351,4 @@ if __name__=="__main__":
     Spider = CategoryData()
     Spider.Get_Ancestor_Category_Data()
     Spider.Get_Parent_Category_Data()
-    Spider.Get_Anchor_Info('网游竞技','英雄联盟',2,11)
+    Spider.Get_Anchor_Info('网游竞技','传奇',1,1)

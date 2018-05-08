@@ -22,7 +22,7 @@ class Get_qd_novel:
             f.close()
 
     def GetNovelData(self):
-        for page in range(1,4000):
+        for page in range(1,44974):
             headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"}
             qd_url = 'https://www.qidian.com/all?orderId=&page=%s&style=1&pageSize=20&siteid=1&pubflag=0&hiddenField=0'%page
             try:
@@ -90,61 +90,80 @@ class Get_qd_novel:
 
         with open("qiandian.log", 'a+') as f:
             f.write("开始写入小说名  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+        #统计写入小说名数量
+        name_num=0
         for i in range(len(self.novel_name)):
             try:
                 ws.cell(row=i + 2, column=1, value=self.novel_name[i])
+                name_num=name_num+1
             except Exception as name_error:
                 with open("qiandian.log", 'a+') as f:
                     f.write("无法写入第%s本小说:%s,原因:%s  "%(i,self.novel_name[i],name_error) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
         with open("qiandian.log", 'a+') as f:
             f.write("开始写入小说作者  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+        # 统计写入小说作者数量
+        author_num = 0
         for i in range(len(self.novel_author)):
             try:
                 ws.cell(row=i + 2, column=2, value=self.novel_author[i])
+                author_num=author_num+1
             except Exception as author_error:
                 with open("qiandian.log", 'a+') as f:
                     f.write("无法写入第%s个作者:%s,原因:%s  "%(i,self.novel_author[i],author_error) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
         with open("qiandian.log", 'a+') as f:
             f.write("开始写入小说大类型  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+        # 统计写入小说大类型数量
+        big_type_num = 0
         for i in range(len(self.novel_big_type)):
             try:
                 ws.cell(row=i + 2, column=3, value=self.novel_big_type[i])
+                big_type_num=big_type_num+1
             except Exception as big_type_error:
                 with open("qiandian.log", 'a+') as f:
                     f.write("无法写入第%s个大分类:%s,原因:%s  " % (i, self.novel_big_type[i],big_type_error) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
         with open("qiandian.log", 'a+') as f:
             f.write("开始写入小说小类型  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+        # 统计写入小说小类型数量
+        small_type_num = 0
         for i in range(len(self.novel_small_type)):
             try:
                 ws.cell(row=i + 2, column=4, value=self.novel_small_type[i])
+                small_type_num=small_type_num+1
             except Exception as small_type_error:
                 with open("qiandian.log", 'a+') as f:
                     f.write("无法写入第%s个小分类:%s,原因:%s "% (i, self.novel_small_type[i],small_type_error) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
         with open("qiandian.log", 'a+') as f:
             f.write("开始写入小说状态  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+        # 统计写入小说状态数量
+        status_num = 0
         for i in range(len(self.novel_status)):
             try:
                 ws.cell(row=i + 2, column=5, value=self.novel_status[i])
+                status_num=status_num+1
             except Exception as status_error:
                 with open("qiandian.log", 'a+') as f:
                     f.write("无法写入第%s个状态:%s,原因:%s  " % (i, self.novel_status[i],status_error) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
         with open("qiandian.log", 'a+') as f:
             f.write("开始写入小说简介  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+        # 统计写入小说简介数量
+        intro_num = 0
         for i in range(len(self.novel_intro)):
             try:
                 ws.cell(row=i + 2, column=6, value=self.novel_intro[i])
+                intro_num=intro_num+1
             except Exception as intro_error:
                 with open("qiandian.log", 'a+') as f:
                     f.write("无法写入第%s个简介:%s,原因:%s  " % (i, self.novel_intro[i],intro_error) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
         with open("qiandian.log", 'a+') as f:
-            f.write("当前总共爬取%s本小说,当前总共爬取%s个作者, 当前总共爬取%s个大分类 当前总共爬取%s个小分类, 当前总共爬取%s个状态, 当前总共爬取%s个简介   "
-                    %(self.novel_name,self.novel_author,self.novel_big_type,self.novel_small_type,self.novel_status,self.novel_status) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S")+"  当前总共爬取%s本小说，写入%s本小说;当前总共爬取%s个作者，写入%s个作者; 当前总共爬取%s个大分类,写入%s个大分类; 当前总共爬取%s个小分类,写入%s个小分类; 当前总共爬取%s个状态,写入%s个状态; 当前总共爬取%s个简介,写入%s个简介"
+                    %(len(self.novel_name),name_num,len(self.novel_author),author_num,len(self.novel_big_type),big_type_num,len(self.novel_small_type),small_type_num,len(self.novel_status),status_num,len(self.novel_intro),intro_num)
+                     + "\n")
 
 
         try:

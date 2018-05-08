@@ -5,7 +5,6 @@ _readme_="获取斗鱼直播信息"
 
 import requests
 import re
-import xlwt
 import json
 import openpyxl
 import time
@@ -15,26 +14,49 @@ class CategoryData:
 
     #初始化分类存储列表
     def __init__(self):
+        #祖分类信息
         self.Ancestor_CategoryInfo=[]
+        #祖分类名称
+        self.Ancestor_Category_Name=[]
+        #祖分类URL
+        self.Ancestor_Category_Url=[]
+        #父分类信息
         self.Parent_CategoryInfo=[]
+        # 父分类名称
+        self.Parent_Category_Name = []
+        # 父分类URL
+        self.Parent_Category_Url = []
+        #子分类标签
         self.Sub_CategoryInfo = []
 
     #获取祖分类
     def Get_Ancestor_Category_Data(self):
+
         # 总分类url地址
         url = "https://www.douyu.com/directory"
+
         try:
+
             # 获取页面信息内容
             response = requests.get(url)
             html = response.text
+
             # 获取关键信息，包含所有的大分类囊括信息
             content1 = re.findall('<div class="classify-li">(.*?)</div>', html, re.S)[0]
             content2 = re.findall('<a(.*?)</li>', content1, re.S)
+
             # 截取关键信息
             for i in content2:
                 Ancestor_Category_name = re.findall('>(.*?)</a>', i, re.S)[0].strip()
                 Ancestor_Category_url = "https://www.douyu.com" + re.findall('data-href="(.*?)"', i, re.S)[0]
                 self.Ancestor_CategoryInfo.append([Ancestor_Category_name, Ancestor_Category_url])
+
+            for info in self.Ancestor_CategoryInfo:
+                # 祖分类名称
+                self.Ancestor_Category_Name.append(info[0])
+                # 祖分类URL
+                self.Ancestor_Category_Name.append(info[1])
+
             with open("douyu.log","a+") as f:
                 f.write("已获取祖分类数据,一共有%s个祖分类 "%len(self.Ancestor_CategoryInfo)+time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
         except Exception as re_error:
@@ -100,6 +122,12 @@ class CategoryData:
             #所有父分类信息
             for k in range(len(url_parent_category)):
                 self.Parent_CategoryInfo.append([name_ancestor_category,url_ancestor_category,name_parent_category[k],url_parent_category[k]])
+
+        for info in self.Parent_CategoryInfo:
+            # 父分类名称
+            self.Parent_Category_Name.append(info[2])
+            # 父分URL
+            self.Parent_Category_Url.append(info[3])
 
     #保存父分类
     def Save_Parent_Category_Data(self):
@@ -190,78 +218,126 @@ class CategoryData:
                     f.close()
         wb.save("斗鱼.xlsx")
 
+    #判断是否存在祖父分类
+    def Is_Exist_Category(self,ancestor,parent):
 
-    #获取分类下的主播：主播名，房间链接，标题，热度
-    def Get_LOL_AnchorInfo(self):
-        for page in range(1,7):
-            #LOL主播翻页API
-            url2='https://www.douyu.com/gapi/rkc/directory/2_1/%s'%page
-            response2=requests.get(url2)
-            html2=response2.text
-            content=json.loads(html2)
-            for data in content['data']['rl']:
-                self.Total_LOL_AnchorInfo.append([data['nn'],"https://www.douyu.com" + data['url'],data['rn'],data['ol']])
+        #判断是否存在祖分类
+        global result
+        result=[]
+        if ancestor in self.Ancestor_Category_Name:
+            #判断是否存在父分类
+            if parent in self.Parent_Category_Name:
+                for info in self.Parent_CategoryInfo:
+                    if ancestor in info and parent in info:
+                        with open("douyu.log", "a+") as f:
+                            f.write("祖父分类都存在  "+time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                        result=info
+                        break
+            else:
+                result=False
+                with open("douyu.log","a+") as f:
+                    f.write("父分类不存在  "+time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
-    #保存主播信息
-    def Save_LOL_AnchorInfo(self):
-        f = xlwt.Workbook()
-        sheet01 = f.add_sheet("LOL主播信息")
-        sheet01.write(0, 0, "主播名称")
-        sheet01.write(0, 1, "主播房间")
-        sheet01.write(0, 2, "主播标题")
-        sheet01.write(0, 3, "主播热度")
-        i = 1
-        for LOL_AnchorInfo in self.Total_LOL_AnchorInfo:
-            sheet01.write(i, 0, LOL_AnchorInfo[0])
-            sheet01.write(i, 1, LOL_AnchorInfo[1])
-            sheet01.write(i, 2, LOL_AnchorInfo[2])
-            sheet01.write(i, 3, LOL_AnchorInfo[3])
-            i = i + 1
-        f.save("斗鱼直播_LOL主播信息.xls")
+        else:
+            result=False
+            with open("douyu.log", "a+") as f:
+                f.write("祖分类不存在  "+time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
-    def Get_Anchor_Data(self):
-        self.Get_Total_Category_Data()
-        anchorinfo=[]
-        impress=[]
-        all_tag_impress=[]
-        for category_urls in self.Total_CategoryUrl:
-            for category_url in category_urls:
-                response=requests.get(category_url)
-                html=response.text
-                anchorname = re.findall('<span class="dy-name ellipsis fl">(.*?)</span>', html, re.S)
-                anchorlink = re.findall('data-sub_rt="0" href="(.*?)"', html, re.S)
-                anchortitle=re.findall('<h3 class="ellipsis">(.*?)</h3>',html,re.S)
-                anchorhot=re.findall('<span class="dy-num fr"  >(.*?)</span>',html,re.S)
-                anchortag=re.findall('<span class="tag ellipsis">(.*?)</span>',html,re.S)
-                content = re.findall('<div class="impress-tag-list">(.*?)</div>', html, re.S)
-                for line in content:
-                    impress.append((line.strip()))
-                for i in range(len(impress)):
-                    tag_impress = re.findall('tags/(.*?)</span>', impress[i], re.S)
-                    all_tag_impress.append(tag_impress)
-                for i in range(len(anchorhot)):
-                    try:
-                        anchorinfo.append((anchorname[i],"https://www.douyu.com" + anchorlink[i],anchortitle[i].strip(),anchorhot[i].strip(),anchortag[i],all_tag_impress[i]))
-                    except Exception as e:
-                        print(e)
-        f = xlwt.Workbook()
-        sheet01 = f.add_sheet("主播信息")
-        sheet01.write(0, 0, "主播名称")
-        sheet01.write(0, 1, "主播房间")
-        sheet01.write(0, 2, "主播标题")
-        sheet01.write(0, 3, "主播热度")
-        sheet01.write(0, 4, "主播类别")
-        sheet01.write(0, 5, "主播印象")
-        i = 1
-        for anchor in anchorinfo:
-            sheet01.write(i, 0, anchor[0])
-            sheet01.write(i, 1, anchor[1])
-            sheet01.write(i, 2, anchor[2])
-            sheet01.write(i, 3, anchor[3])
-            sheet01.write(i, 4, anchor[4])
-            sheet01.write(i, 5, anchor[5])
-            i = i + 1
-        f.save("斗鱼直播主播信息.xls")
+        return result
+
+    #根据提供的祖父分类及页数，批量爬取该分类的主播信息
+    def Get_Anchor_Info(self,ancestor,parent,type_num,page):
+        result=self.Is_Exist_Category(ancestor,parent)
+        anchor_name = []
+        anchor_title=[]
+        anchor_parent_category=[]
+        anchor_room=[]
+        anchor_hot=[]
+        anchor_info=[]
+        tag=[]
+
+
+        if result is False:
+            with open("douyu.log", "a+") as f:
+                f.write("分类不存在,无法获取主播信息  "+time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+        else:
+            with open("douyu.log", "a+") as f:
+                f.write("分类存在,准备获取主播信息  "+time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+
+            url=result[3]
+            response=requests.get(url)
+            html=response.text
+            l=re.findall('<a class="play-list-link"',html,re.S)
+
+            if len(l)>120:
+
+                for page_num in range(1,page+1):
+
+                    api='https://www.douyu.com/gapi/rkc/directory/2_%s/%s'%(type_num,page_num)
+                    response2=requests.get(api)
+                    html2=response2.text
+                    content=json.loads(html2)
+
+                    for i in range(len(content['data']['rl'])):
+                        data=content['data']['rl'][i]
+
+                        if 'nn' in data:
+                            name=data['nn']
+                        else:
+                            name="主播无名称"
+
+                        if 'rn' in data:
+                            title=data['rn']
+                        else:
+                            title="主播无房间标题"
+
+                        if 'c2name' in data:
+                            parent_category=data['c2name']
+                        else:
+                            parent_category="主播无父分类"
+
+                        if 'url' in data:
+                            room="https://www.douyu.com"+data['url']
+                        else:
+                            room="主播无房间链接"
+
+                        if 'ol' in data:
+                            hot=data['ol']
+                        else:
+                            hot="主播房间无人"
+
+                        if 'utag' in data:
+                            for s in data['utag']:
+                                tag.append(s['name'])
+                        else:
+                            tag="主播无标签"
+
+                        anchor_info.append([name,title,parent_category,room,hot,tag])
+
+            else:
+                # 获取主播名称
+                content_name = re.findall('<span class="dy-name ellipsis fl">(.*?)</span>', html, re.S)
+                for content in content_name:
+                    anchor_name.append(content)
+                #获取主播房间标题
+                content_title=re.findall('<h3 class="ellipsis">(.*?)</h3>',html,re.S)
+                for content in content_title:
+                    anchor_title.append(content.strip())
+                #获取主播父分类
+                content_parent_category=re.findall('<span class="tag ellipsis">(.*?)</span>',html,re.S)
+                for content in content_parent_category:
+                    anchor_parent_category.append(content)
+                #获取主播房间链接
+                content_room=re.findall('data-sub_rt="0" href="(.*?)"',html,re.S)
+                for content in content_room:
+                    anchor_room.append("https://www.douyu.com"+content)
+                #获取主播现时人数
+                content_hot=re.findall('<span class="dy-num fr"  >(.*?)</span>',html,re.S)
+                for content in content_hot:
+                    anchor_hot.append(content)
+
+
+
 
 
 
@@ -271,5 +347,4 @@ if __name__=="__main__":
     Spider = CategoryData()
     Spider.Get_Ancestor_Category_Data()
     Spider.Get_Parent_Category_Data()
-    Spider.Get_Sub_Category_Data()
-    Spider.Save_Sub_Category_Data()
+    Spider.Get_Anchor_Info('网游竞技','英雄联盟',2,11)

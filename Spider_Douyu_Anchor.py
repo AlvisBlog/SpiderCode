@@ -7,91 +7,189 @@ import requests
 import re
 import xlwt
 import json
+import openpyxl
+import time
 
 #数据处理
 class CategoryData:
 
     #初始化分类存储列表
     def __init__(self):
-        self.Total_BigCategoryInfo=[]
-        self.Total_CategoryInfo=[]
-        self.Total_CategoryUrl = []
-        self.Total_CategoryName=[]
-        self.Total_LOL_AnchorInfo=[]
+        self.Ancestor_CategoryInfo=[]
+        self.Parent_CategoryInfo=[]
+        self.Sub_CategoryInfo = []
 
-    #获取大分类
-    def Get_Total_BigCategory_Data(self):
+    #获取祖分类
+    def Get_Ancestor_Category_Data(self):
         # 总分类url地址
         url = "https://www.douyu.com/directory"
-        # 获取页面信息内容
-        response = requests.get(url)
-        html = response.text
-        # 获取关键信息，包含所有的大分类囊括信息
-        content1 = re.findall('<div class="classify-li">(.*?)</div>', html, re.S)[0]
-        content2 = re.findall('<a(.*?)</li>', content1, re.S)
-        # 截取关键信息
-        for i in content2:
-            big_Category_name = re.findall('>(.*?)</a>', i, re.S)[0].strip()
-            big_Category_url = "https://www.douyu.com" + re.findall('data-href="(.*?)"', i, re.S)[0]
-            self.Total_BigCategoryInfo.append((big_Category_name,big_Category_url))
+        try:
+            # 获取页面信息内容
+            response = requests.get(url)
+            html = response.text
+            # 获取关键信息，包含所有的大分类囊括信息
+            content1 = re.findall('<div class="classify-li">(.*?)</div>', html, re.S)[0]
+            content2 = re.findall('<a(.*?)</li>', content1, re.S)
+            # 截取关键信息
+            for i in content2:
+                Ancestor_Category_name = re.findall('>(.*?)</a>', i, re.S)[0].strip()
+                Ancestor_Category_url = "https://www.douyu.com" + re.findall('data-href="(.*?)"', i, re.S)[0]
+                self.Ancestor_CategoryInfo.append([Ancestor_Category_name, Ancestor_Category_url])
+            with open("douyu.log","a+") as f:
+                f.write("已获取祖分类数据,一共有%s个祖分类 "%len(self.Ancestor_CategoryInfo)+time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+        except Exception as re_error:
+            with open("douyu.log","a+") as f:
+                f.write("页面无法相应,错误:%s  "%re_error+time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
-    #保存大分类
-    def Save_Total_BigCategory_Data(self):
-        # 创建Excel
-        f = xlwt.Workbook()
-        # 创建大分类信息存储的excel表
-        sheet01 = f.add_sheet("斗鱼直播总分类信息")
-        sheet01.write(0, 0, "分类名")
-        sheet01.write(0, 1, "分类url地址")
-        for i in range(len(self.Total_BigCategoryInfo)):
-            sheet01.write(i + 1, 0, self.Total_BigCategoryInfo[i][0])
-            sheet01.write(i + 1, 1, self.Total_BigCategoryInfo[i][1])
-        f.save("斗鱼直播总分类信息.xls")
+        return self.Parent_CategoryInfo
 
-    #获取所有分类
-    def Get_Total_Category_Data(self):
-        self.Get_Total_BigCategory_Data()
-        for i in range(1,len(self.Total_BigCategoryInfo)):
-            #获取大分类的名称及url地址
-            url_bigcategory=self.Total_BigCategoryInfo[i][1]
-            name_bigcategory=self.Total_BigCategoryInfo[i][0]
-            #print("大分类:"+name_part_bigcategory+",url:"+url_part_bigcategory)
-            #获取各个大分类的页面源代码
-            html=requests.get(url_bigcategory).text
-            #获取各个大分类的子分类所在数据区
+    #保存祖分类
+    def Save_Ancestor_Category_Data(self):
+        with open("douyu.log", 'a+') as f:
+            f.write("检查获取祖分类函数返回的祖分类数据为%s  "%len(self.Ancestor_CategoryInfo) + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+            f.close()
+        try:
+            # 存在文件则进行加载
+            wb = openpyxl.load_workbook(filename="斗鱼.xlsx")
+        except Exception as e:
+            with open("douyu.log", 'a+') as f:
+                f.write("斗鱼.xlsx文件名不存在,进行创建  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                f.close()
+            # 不存在则进行创建
+            wb = openpyxl.Workbook()
+        # 获取所有的表
+        all = wb.sheetnames
+        # 删除表Sheet
+        name = 'Sheet'
+        if name in all:
+            del wb['Sheet']
+        # 创建新表
+        ws = wb.create_sheet()
+        # 为新表命名
+        ws.title ='斗鱼祖分类'
+        ws.cell(row=1, column=1, value='祖分类名称')
+        ws.cell(row=1, column=2, value='祖分类Url')
+        for i in range(len(self.Ancestor_CategoryInfo)):
+            try:
+                ws.cell(row=i+2, column=1, value=self.Ancestor_CategoryInfo[i][0])
+                ws.cell(row=i+2, column=2, value=self.Ancestor_CategoryInfo[i][1])
+            except Exception as BigCategoryInfo_error:
+                with open("douyu.log", 'a+') as f:
+                    f.write("无法写入数据,错误:%s  "%BigCategoryInfo_error + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                    f.close()
+        wb.save("斗鱼.xlsx")
+
+    #获取父分类
+    def Get_Parent_Category_Data(self):
+        for i in range(1,len(self.Ancestor_CategoryInfo)):
+            #获取祖分类的名称及url地址
+            url_ancestor_category=self.Ancestor_CategoryInfo[i][1]
+            name_ancestor_category=self.Ancestor_CategoryInfo[i][0]
+            #获取各个总分类的页面源代码
+            html=requests.get(url_ancestor_category).text
+            #获取各个祖分类下的父分类所在数据区
             contents=re.findall('<ul id="live-list-contentbox">(.*?)</ul>',html,re.S)[0]
-            #获取所有的子分类名称
-            name_subcategorys=re.findall('<p class="title">(.*?)</p>',contents,re.S)
-            #获取所有的子分类url
+            #获取所有的父分类名称
+            name_parent_category=re.findall('<p class="title">(.*?)</p>',contents,re.S)
+            #获取所有的父分类url
             url=re.findall('href="(.*?)"',contents,re.S)
             #为url添加https://www.douyu.com
-            url_subcategorys = []
-            for i in range(len(url)):
-                url_subcategorys.append("https://www.douyu.com" + url[i])
-            self.Total_CategoryInfo.append(((name_bigcategory,name_subcategorys),(url_bigcategory,url_subcategorys)))
-            self.Total_CategoryUrl.append(url_subcategorys)
-            self.Total_CategoryName.append(name_subcategorys)
+            url_parent_category=[]
+            for j in range(len(url)):
+                url_parent_category.append("https://www.douyu.com" + url[j])
+            #所有父分类信息
+            for k in range(len(url_parent_category)):
+                self.Parent_CategoryInfo.append([name_ancestor_category,url_ancestor_category,name_parent_category[k],url_parent_category[k]])
 
-    #保存所有分类
-    def Save_Total_Category_Data(self):
-        # 存储分类信息
-        f = xlwt.Workbook()
-        # 根据分类名称创建工作表
-        for i in range(len(self.Total_CategoryInfo)):
-            # 创建大分类工作表
-            sheet01 = f.add_sheet(self.Total_CategoryInfo[i][0][0])
-            sheet01.write(0, 0, "总分类名")
-            sheet01.write(1, 0, self.Total_CategoryInfo[i][0][0])
-            sheet01.write(0, 1, "总分类url")
-            sheet01.write(1, 1, self.Total_CategoryInfo[i][1][0])
-            sheet01.write(0, 2, "子分类名")
-            sheet01.write(0, 3, "子分类url地址")
-            for j in range(len(self.Total_CategoryInfo[i][0][1])):
-                # 写入子分类名称
-                sheet01.write(j + 1, 2, self.Total_CategoryInfo[i][0][1][j])
-                # 写入子分类url
-                sheet01.write(j + 1, 3, self.Total_CategoryInfo[i][1][1][j])
-        f.save("斗鱼直播所有分类信息.xls")
+    #保存父分类
+    def Save_Parent_Category_Data(self):
+        try:
+            # 存在文件则进行加载
+            wb = openpyxl.load_workbook(filename="斗鱼.xlsx")
+        except Exception as e:
+            with open("douyu.log", 'a+') as f:
+                f.write("斗鱼.xlsx文件名不存在,进行创建  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                f.close()
+            # 不存在则进行创建
+            wb = openpyxl.Workbook()
+        # 获取所有的表
+        all = wb.sheetnames
+        # 删除表Sheet
+        name = 'Sheet'
+        if name in all:
+            del wb['Sheet']
+        # 创建新表
+        ws = wb.create_sheet()
+        # 为新表命名
+        ws.title ='斗鱼父分类'
+        ws.cell(row=1, column=1, value='祖分类名称')
+        ws.cell(row=1, column=2, value='祖分类Url')
+        ws.cell(row=1, column=3, value='父分类名称')
+        ws.cell(row=1, column=4, value='父分类Url')
+        for i in range(len(self.Parent_CategoryInfo)):
+            try:
+                ws.cell(row=i + 2, column=1, value=self.Parent_CategoryInfo[i][0])
+                ws.cell(row=i + 2, column=2, value=self.Parent_CategoryInfo[i][1])
+                ws.cell(row=i + 2, column=3, value=self.Parent_CategoryInfo[i][2])
+                ws.cell(row=i + 2, column=4, value=self.Parent_CategoryInfo[i][3])
+            except Exception as ParentCategoryInfo_error:
+                with open("douyu.log", 'a+') as f:
+                    f.write("无法写入数据,错误:%s  "%ParentCategoryInfo_error + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                    f.close()
+        wb.save("斗鱼.xlsx")
+
+    #获取子分类
+    def Get_Sub_Category_Data(self):
+        for i in range(len(self.Parent_CategoryInfo)):
+            response=requests.get(self.Parent_CategoryInfo[i][3])
+            html=response.text
+            content=re.findall('data-live-list-type="(.*?)"',html,re.S)
+            if content==[]:
+                content2 = "无子分类标签"
+                self.Sub_CategoryInfo.append([self.Parent_CategoryInfo[i], content2])
+            else:
+                del content[0]
+                self.Sub_CategoryInfo.append([self.Parent_CategoryInfo[i], str(content).strip('[').strip(']').replace("'","")])
+
+    #保存子分类
+    def Save_Sub_Category_Data(self):
+        try:
+            # 存在文件则进行加载
+            wb = openpyxl.load_workbook(filename="斗鱼.xlsx")
+        except Exception as e:
+            with open("douyu.log", 'a+') as f:
+                f.write("斗鱼.xlsx文件名不存在,进行创建  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                f.close()
+            # 不存在则进行创建
+            wb = openpyxl.Workbook()
+        # 获取所有的表
+        all = wb.sheetnames
+        # 删除表Sheet
+        name = 'Sheet'
+        if name in all:
+            del wb['Sheet']
+        # 创建新表
+        ws = wb.create_sheet()
+        # 为新表命名
+        ws.title ='斗鱼子分类'
+        ws.cell(row=1, column=1, value='祖分类名称')
+        ws.cell(row=1, column=2, value='祖分类Url')
+        ws.cell(row=1, column=3, value='父分类名称')
+        ws.cell(row=1, column=4, value='父分类Url')
+        ws.cell(row=1, column=5, value='子分类标签')
+        for i in range(len(self.Sub_CategoryInfo)):
+            try:
+                ws.cell(row=i + 2, column=1, value=self.Sub_CategoryInfo[i][0][0])
+                ws.cell(row=i + 2, column=2, value=self.Sub_CategoryInfo[i][0][1])
+                ws.cell(row=i + 2, column=3, value=self.Sub_CategoryInfo[i][0][2])
+                ws.cell(row=i + 2, column=4, value=self.Sub_CategoryInfo[i][0][3])
+                ws.cell(row=i + 2, column=5, value=self.Sub_CategoryInfo[i][1])
+            except Exception as SubCategoryInfo_error:
+                with open("douyu.log", 'a+') as f:
+                    f.write("无法写入数据,错误:%s  "%SubCategoryInfo_error + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                    f.close()
+        wb.save("斗鱼.xlsx")
+
 
     #获取分类下的主播：主播名，房间链接，标题，热度
     def Get_LOL_AnchorInfo(self):
@@ -170,5 +268,8 @@ class CategoryData:
 #主函数运行
 if __name__=="__main__":
     #实例化
-    a = CategoryData()
-    a.Get_Anchor_Data()
+    Spider = CategoryData()
+    Spider.Get_Ancestor_Category_Data()
+    Spider.Get_Parent_Category_Data()
+    Spider.Get_Sub_Category_Data()
+    Spider.Save_Sub_Category_Data()

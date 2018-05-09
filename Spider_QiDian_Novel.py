@@ -22,7 +22,7 @@ class Get_qd_novel:
             f.close()
 
     def GetNovelData(self):
-        for page in range(1,44974):
+        for page in range(1,10001):
             headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"}
             qd_url = 'https://www.qidian.com/all?orderId=&page=%s&style=1&pageSize=20&siteid=1&pubflag=0&hiddenField=0'%page
             try:

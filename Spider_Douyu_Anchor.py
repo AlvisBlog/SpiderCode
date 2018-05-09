@@ -294,7 +294,7 @@ class CategoryData:
                                     h.append(s['name'])
                                 tag=h
                         except Exception:
-                            tag="主播无标签"
+                            tag=['主播无标签']
                         finally:
                             self.Anchor_Info.append([name,title,parent_category,room,hot,tag])
 
@@ -340,6 +340,47 @@ class CategoryData:
                 for data in self.Anchor_Info:
                     print(data)
 
+    #保存Anchor_Info
+    def Save_Anchor_Info(self,parent_sheet):
+        try:
+            # 存在文件则进行加载
+            wb = openpyxl.load_workbook(filename="斗鱼.xlsx")
+        except Exception as e:
+            with open("douyu.log", 'a+') as f:
+                f.write("斗鱼.xlsx文件名不存在,进行创建  " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                f.close()
+            # 不存在则进行创建
+            wb = openpyxl.Workbook()
+        # 获取所有的表
+        all = wb.sheetnames
+        # 删除表Sheet
+        name = 'Sheet'
+        if name in all:
+            del wb['Sheet']
+        # 创建新表
+        ws = wb.create_sheet()
+        # 为新表命名
+        ws.title =parent_sheet
+        ws.cell(row=1, column=1, value='主播名称')
+        ws.cell(row=1, column=2, value='房间标题')
+        ws.cell(row=1, column=3, value='主播父分类名称')
+        ws.cell(row=1, column=4, value='主播房间地址Url')
+        ws.cell(row=1, column=5, value='主播房间人数')
+        ws.cell(row=1, column=6, value='主播标签')
+        for i in range(len(self.Anchor_Info)):
+            try:
+                ws.cell(row=i + 2, column=1, value=self.Anchor_Info[i][0])
+                ws.cell(row=i + 2, column=2, value=self.Anchor_Info[i][1])
+                ws.cell(row=i + 2, column=3, value=self.Anchor_Info[i][2])
+                ws.cell(row=i + 2, column=4, value=self.Anchor_Info[i][3])
+                ws.cell(row=i + 2, column=5, value=self.Anchor_Info[i][4])
+                ws.cell(row=i + 2, column=6, value=str(self.Anchor_Info[i][5]).strip("[").strip("]").replace("'",""))
+            except Exception as Anchor_Info_error:
+                ws.cell(row=i + 2, column=6, value='主播无标签')
+                with open("douyu.log", 'a+') as f:
+                    f.write("无法写入数据,错误:%s  "%Anchor_Info_error + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                    f.close()
+        wb.save("斗鱼.xlsx")
 
 
 
@@ -351,4 +392,5 @@ if __name__=="__main__":
     Spider = CategoryData()
     Spider.Get_Ancestor_Category_Data()
     Spider.Get_Parent_Category_Data()
-    Spider.Get_Anchor_Info('网游竞技','传奇',1,1)
+    Spider.Get_Anchor_Info('网游竞技','DNF',40,3)
+    Spider.Save_Anchor_Info('DNF')

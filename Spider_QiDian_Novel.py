@@ -22,7 +22,11 @@ class Get_qd_novel:
             f.close()
 
     def GetNovelData(self):
-        for page in range(1,10001):
+
+        #忽略警告信息
+        urllib3.disable_warnings()
+
+        for page in range(1,20):
             headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"}
             qd_url = 'https://www.qidian.com/all?orderId=&page=%s&style=1&pageSize=20&siteid=1&pubflag=0&hiddenField=0'%page
             try:
@@ -32,7 +36,7 @@ class Get_qd_novel:
                     f.write(time.strftime("%Y-%m-%d %H:%M:%S  ")+"第%s页无法获取到数据  "%page +"错误为:%s"%net_error + "\n")
                     f.close()
                 continue
-            urllib3.disable_warnings()
+
             html = response.text
 
             # 小说名称
